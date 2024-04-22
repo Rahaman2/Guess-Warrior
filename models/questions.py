@@ -12,19 +12,31 @@ class Questions:
 
     def __init__(self, file_name) -> None:
         self.file_name = file_name
-        self.__parent_Folder = 'csv/'
+        # self.__parent_Folder = 'csv/'
         self.current_question = "no questions has been set"
         self.__current_question_list = []
         self.Score  = 0
         
+        
+    def __dictionary_initializer(self) -> dict:
+        pass
 
+
+    def __is_question_used(self, question:str) -> bool:
+        
+        return True
+
+    def __initialize_question_list(self) -> list:
+        pass
+    
     def generate_question(self) -> str:
         """Gets a question from the csv file and returns it as  a generated question"""
-        with open(f'{self.__parent_Folder}{self.file_name}') as csv_file:
+        with open(f'csv/{self.file_name}') as csv_file:
             csv_reader = csv.reader(csv_file)
             chosen_row = random.randint(1,1063)
             for i,row in enumerate(list(csv_reader)):
                 if i == chosen_row: 
+                    print(csv_reader)
                     print(f"Chose from row: {i}")
                     self.current_question = row[0]
                     self.__current_question_list = row
@@ -47,10 +59,7 @@ class Questions:
             answers_and_scores.pop(0)
         return question_dict
     
-    
-    def get_question_dict(self) -> dict:
-        return self.get_question_dict()
-    
+
 
     def eval_user_answer(self, user_answer, answers, question):
         """Checks sementics of answers"""
@@ -70,14 +79,10 @@ def run_game():
     game_questions = Questions('questions.csv')
 
     question = game_questions.generate_question()
-    answers = game_questions.question_dict()
     print(question)
+    answers = game_questions.question_dict()
     print(answers)    
-    # user_answer = input("Enter your answer: ")
-    # while user_answer.strip() == "":
-    #     user_answer = input("Enter your answer: ")
 
-    # game_questions.eval_user_answer(user_answer, answers, answers)
 
 if __name__ == "__main__":
     run_game()
