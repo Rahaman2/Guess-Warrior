@@ -31,12 +31,11 @@ class Questions:
     
     def generate_question(self) -> str:
         """Gets a question from the csv file and returns it as  a generated question"""
-        with open(f'csv/{self.file_name}') as csv_file:
+        with open(f'models/csv/{self.file_name}') as csv_file:
             csv_reader = csv.reader(csv_file)
             chosen_row = random.randint(1,1063)
             for i,row in enumerate(list(csv_reader)):
                 if i == chosen_row: 
-                    print(csv_reader)
                     print(f"Chose from row: {i}")
                     self.current_question = row[0]
                     self.__current_question_list = row
@@ -50,7 +49,7 @@ class Questions:
     def question_dict(self) -> dict:
         """returns a dictionary mapping answer to score of the currently selected question"""    
         answers_and_scores =  self.__current_question_list[1:]
-        # print(self.current_question)
+        print(self.current_question)
         question_dict = {}
 
         while len(answers_and_scores) > 0:
