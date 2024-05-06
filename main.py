@@ -6,7 +6,7 @@ from controllers import *
 
 
 
-app = Flask(__name__, template_folder='views/templates')
+app = Flask(__name__, template_folder='views/templates', static_url_path="/assets")
 app.config['SECRET_KEY'] = "zukkiii"
 socketio = SocketIO(app)
 
