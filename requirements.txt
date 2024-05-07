@@ -3,3 +3,4 @@ python-dotenv==1.0.1
 g4f==0.2.9.10
 Flask==3.0.3
 Flask-SocketIO==5.3.6
+gunicorn==22.0.0
