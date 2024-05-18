@@ -1,0 +1,68 @@
+@font-face {
+    font-family: stratum;
+    src: url('../assets/Stratum2-Regular.otf');
+}
+
+body {
+	overflow: hidden;
+	padding: 0px;
+	margin: 0 auto;
+	/* background-image: url('../assets/bg_wide.png'); */
+	background-position: center center;
+	background-repeat: no-repeat;
+	font-family: stratum;
+}
+
+.hero {
+	margin-top: 4rem;
+	width: 100%;
+	margin: 2rem;
+}
+
+.header {
+	color: blue;
+	font-size: 2rem;
+	text-align: center;
+	margin-bottom: 3rem;
+}
+
+.question {
+	padding: 1rem;
+	border: 5px solid blue;
+	background-color: rgba(210, 32, 121, 0.541);
+	text-align: center;
+	max-width: 700px;
+	min-width: 300px;
+	margin: 0 auto;
+	font-size: 1.2rem;
+	margin-bottom: 3rem;
+}
+
+.answers {
+	margin: 3rem;
+}
+
+.cols {
+	display: flex;
+	justify-content: space-evenly;
+	align-items: center;
+}
+.answer-container {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	background-color: rgba(210, 32, 121, 0.541);
+	border: 5px solid blue;
+	min-width: 400px;
+}
+
+.answer-container > .answer {
+	width: 90%;
+	
+}
+
+.answer-container > .points {
+	width: 10%;
+	border-left: 5px solid blue;
+	padding: 1rem;
+}

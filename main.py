@@ -1,12 +1,16 @@
-from flask import Flask, render_template, request, session, redirect, url_for
+from flask import Flask, render_template, request, session, redirect, url_for, jsonify
 from flask_socketio import join_room, leave_room, send, SocketIO
 import random
+import requests
+import json
 from string import ascii_uppercase
 from controllers import *
+import models.questions as questionObj
 
 
 
-app = Flask(__name__, template_folder='views/templates', static_url_path="/assets")
+
+app = Flask(__name__, template_folder='views/templates', static_url_path="/static")
 app.config['SECRET_KEY'] = "zukkiii"
 socketio = SocketIO(app)
 
@@ -49,6 +53,53 @@ def home():
     return render_template("home.html")
 
 
+@app.route("/game")
+def game():
+    # generating full url for internal api request
+
+    
+    # root_url = f"{request.scheme}://{request.host}/question"
+    # # print(request.scheme)
+
+
+    # # making a request to the first endpoint 
+    # response = requests.get(root_url).json()
+    # print(root_url)
+
+    # question = response["question"]
+    return render_template("game.html")
+
+
+
+# the questions api
+
+@app.route("/question", methods=["POST", "GET"])
+def questions():
+    if request.method =="GET":
+        questionObject = questionObj.Questions()
+        current_question = questionObject.generate_question()
+        answers = questionObject.question_dict()
+        # sorted_values = sorted(answers.items(), key=lambda item:item[1])
+        # sorted_keys = [item[0] for item in sorted_]
+        # sorted_values = sorted([ int(answers[key]) for i,key in enumerate(sorted_keys)], reverse=True)
+         
+        question_json_data = {
+            "question": current_question,
+            "answers": answers,
+            "sorted_answer_list": [key for (key,val) in answers.items()],
+            # "sorted_points": sorted_values
+        }
+        print(question_json_data)
+        return jsonify(question_json_data)
+    elif request.method == "POST":
+        pass    
+        return jsonify({})
+
+    
+    
+
+
+# sessions 
 @app.route("/room")
 def room():
     room = session.get("room")

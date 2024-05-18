@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Family Feud</title>
+        <link rel="stylesheet" href="{{url_for('static', filename='css/feud.css')}}" />
+        <!-- <link rel="stylesheet" href="{{url_for('static', filename='assets/background.png')}}" /> -->
+    </head>
+    <body>
+        <div class="hero">
+        <div class="header">
+            GUESS WARIOR
+        </div>
+        <!-- question goes here -->
+        <div class="question-container">
+            <div class="question" id="question"></div>
+        </div>
+
+        <div class="container">
+            <div class="column-1">
+
+                <!-- answer field -->
+                <div class="answers">
+                    <div class="answer-container">
+                        <div class="answer hidden"></div>
+                        <div class="points">1</div>
+                    </div>
+                </div>
+                <!-- answer field -->
+                <div class="answers">
+                    <div class="answer-container">
+                        <div class="answer hidden"></div>
+                        <div class="points">2</div>
+                    </div>
+                </div>
+                <!-- answer field -->
+                <div class="answers">
+                    <div class="answer-container">
+                        <div class="answer hidden"></div>
+                        <div class="points">3</div>
+                    </div>
+                </div>
+            </div>
+            
+        <div class="column2">
+                
+                <!-- answer field -->
+            <div class="answers">
+                <div class="answer-container">
+                    <div class="answer hidden"></div>
+                    <div class="points">4</div>
+                </div>
+            </div>
+            <!-- answer field -->
+            <div class="answers">
+                <div class="answer-container">
+                    <div class="answer hidden"></div>
+                    <div class="points">5</div>
+                </div>
+            </div>
+            <!-- answer field -->
+            <div class="answers">
+                <div class="answer-container">
+                    <div class="answer hidden"></div>
+                    <div class="points">6</div>
+                </div>
+            </div>
+        </div>
+            
+        </div>
+    </div>
+
+    <script type="text/javascript" src="{{url_for('static', filename='js/jquery-1.8.2.min.js')}}"></script>
+    <script type="text/javascript" src="{{url_for('static', filename='js/all_questions.js')}}"></script>
+    <script type="text/javascript" src="{{url_for('static', filename='js/fued.js')}}"></script>
+</body>
+</html>

@@ -10,8 +10,8 @@ import g4f
 class Questions:
 
 
-    def __init__(self, file_name) -> None:
-        self.file_name = file_name
+    def __init__(self) -> None:
+        # self.file_name = file_name
         # self.__parent_Folder = 'csv/'
         self.current_question = "no questions has been set"
         self.__current_question_list = []
@@ -30,16 +30,17 @@ class Questions:
         pass
     
     def generate_question(self) -> str:
-        """Gets a question from the csv file and returns it as  a generated question"""
-        with open(f'models/csv/{self.file_name}') as csv_file:
+        """Gets a question from the csv file and returns it as a generated question"""
+        with open(f'models/csv/questions.csv', encoding='utf-8') as csv_file:
             csv_reader = csv.reader(csv_file)
-            chosen_row = random.randint(1,1063)
-            for i,row in enumerate(list(csv_reader)):
-                if i == chosen_row: 
+            chosen_row = random.randint(1, 1063)
+            for i, row in enumerate(list(csv_reader)):
+                if i == chosen_row:
                     print(f"Chose from row: {i}")
                     self.current_question = row[0]
                     self.__current_question_list = row
         return self.current_question
+
     
 
     def get_question(self) -> str:
@@ -75,13 +76,17 @@ class Questions:
 
 def run_game():
     """runs the game"""
-    game_questions = Questions('questions.csv')
+    game_questions = Questions()
 
-    question = game_questions.generate_question()
-    print(question)
-    answers = game_questions.question_dict()
-    print(answers)    
+    is_on = True
+    while(is_on):
+        question = game_questions.generate_question()
+        # print(question)
+        answers = game_questions.question_dict()
+        print(answers)   
+        answer = input("Enter your answer\n > ")
+        game_questions.eval_user_answer(answer, answers, question); 
 
 
-if __name__ == "__main__":
-    run_game()
+# if __name__ == "__main__":
+#     run_game()
