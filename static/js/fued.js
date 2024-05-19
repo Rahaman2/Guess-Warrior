@@ -1,8 +1,13 @@
-const answers = document.querySelectorAll(".answer-container");
+const answersEl = document.querySelectorAll(".answer-container");
 const question = document.getElementById("question");
+const answerForm = document.getElementById("answer-form");
+const answerInput = document.getElementById("answer-input-field");
 
 
-
+/**
+ * makes a request to the questions endpoint an object of question and answers or null
+ * @returns object || null
+ */
 
 const getQuestionData = async () => {
     try {
@@ -18,22 +23,107 @@ const getQuestionData = async () => {
 
     }
 
-    
-    const storeValuesInElements = async () => {
+
+
+
+/*
+ * Displays the question
+* returns the question object
+ */
+
+const displayQuestion = async () => {
     const questionData = await getQuestionData();
     question.textContent =  questionData.question;
-    
-    
-    answers.forEach( (answerEl, ind) => {
-        const answerField = answerEl.firstChild;
-        const pointsField = answerEl.nextSibling.nextSibling;
-        console.log(answerField.classList, pointsField.classList)
-        const hidden = answerField.classList;
-        if(hidden) {
-            answerField.textContent = questionData.sorted_answer_list[ind];
+    return questionData;
+}
+/**
+ * Displays the appropriate information from the question to the user.
+ * It displays the question to the user and displays the answer when
+ * a user correctly answers a question.
+ */
+const storeValuesInElements = async () => {
+    const questionData = await displayQuestion(); // wait for the question to be displayed
+
+    answerForm.addEventListener("submit", (e) => {
+        e.preventDefault(); // prevent page reloading
+        const userAnswer = answerInput.value;
+        const answerObj = {
+            questionData,
+            userAnswer
         }
+        sendAnswer(answerObj)
+    })
+
+    const answer = Object.keys(questionData.answers)
+    console.log(answer);
+    answersEl.forEach( (answerEl, ind) => {
+        // const answerField = answerEl.children[0];
+        // const pointsField = answerEl.children[1];
+        // answerField.textContent = answer[ind];
+        // console.log(answerEl);
+        // console.log(answerField.textContent, pointsField.classList)
+        // const hidden = answerField.classList;
+        // const revealedAnswer = questionData.sorted_answer_list[ind]; 
+        // if(hidden) {
+
+        // } else {
+        //     answerField.textContent = revealedAnswer; // displaying the answer
+        //     pointsField.textContent = questionData.answers[revealedAnswer]; // displaying the points for the answer
+
+        // }
     });
 }
 
 storeValuesInElements();
+
+const sendAnswer = async (answer) => {
+    const data = answer;
+    // console.log(data)
+    try {
+        const json = await fetch("/question", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            }, 
+            body: JSON.stringify(data)
+        });
+    
+        const response = await json.json();
+        console.log(response);
+        const {sorted_answer_list, answers, userAnswer } = response.questionData;
+        // console.log(`The userAnswer  is ${ans}`);
+        // console.log(`The answers  is ${response.questionData.answers}`);
+        // console.log(`The sortedlist  is ${response.questionData.sorted_answer_list}`);
+
+
+        revealAnswer( answer, sorted_answer_list, answers );
+        
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+/**
+ * @param
+ */
+const isAnswerValid = (userAnswer, validAnswersList) =>  validAnswersList.includes(userAnswer) ? true : false;
+
+
+
+const revealAnswer = ( userAnswer, validAnswersList, validAnswersObject ) => {
+
+    const answers = document.querySelectorAll(".answer");
+    const points = document.querySelectorAll(".points");
+    console.log(validAnswersList);
+    console.log(validAnswersList.indexOf(userAnswer));
+    console.log(userAnswer)
+    if (isAnswerValid(userAnswer,  validAnswersList)) {
+        const elementInd = validAnswersList.indexOf(userAnswer);
+        const correctAnswerEL = answers[elementInd] // selecting the correct element to reveal the answer
+        const correctPointsEL = points[elementInd] // selecting the correct element to reveal the points for  the answer
+        correctAnswerEL.textContent = userAnswer;
+        correctPointsEL.textContent =  validAnswersObject[answers[elementInd]] 
+    }
+
+}
 

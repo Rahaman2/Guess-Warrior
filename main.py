@@ -92,8 +92,15 @@ def questions():
         print(question_json_data)
         return jsonify(question_json_data)
     elif request.method == "POST":
-        pass    
-        return jsonify({})
+        
+        data = request.get_json()
+        print(data)
+        
+        return jsonify(data)
+        # print(request)
+        # # {"name": 1}.keys()
+        # posted_data = request.form["answer"]
+        # print(posted_data)
 
     
     
