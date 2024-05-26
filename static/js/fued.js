@@ -96,7 +96,7 @@ const sendAnswer = async (answer) => {
         // console.log(`The sortedlist  is ${response.questionData.sorted_answer_list}`);
 
 
-        revealAnswer( answer, sorted_answer_list, answers );
+        revealAnswer( answer["userAnswer"] , sorted_answer_list, answers );
         
     } catch (error) {
         console.log(error);
@@ -110,19 +110,24 @@ const isAnswerValid = (userAnswer, validAnswersList) =>  validAnswersList.includ
 
 
 
-const revealAnswer = ( userAnswer, validAnswersList, validAnswersObject ) => {
+const revealAnswer = async ( userAnswer, validAnswersList, validAnswersObject ) => {
 
     const answers = document.querySelectorAll(".answer");
     const points = document.querySelectorAll(".points");
     console.log(validAnswersList);
-    console.log(validAnswersList.indexOf(userAnswer));
     console.log(userAnswer)
+    console.log(validAnswersObject)
     if (isAnswerValid(userAnswer,  validAnswersList)) {
+        const audio = new Audio("static/assets/correct.mp3");
+        await audio.play();
         const elementInd = validAnswersList.indexOf(userAnswer);
         const correctAnswerEL = answers[elementInd] // selecting the correct element to reveal the answer
         const correctPointsEL = points[elementInd] // selecting the correct element to reveal the points for  the answer
         correctAnswerEL.textContent = userAnswer;
-        correctPointsEL.textContent =  validAnswersObject[answers[elementInd]] 
+        correctPointsEL.textContent =  validAnswersObject[userAnswer];
+    } else {
+        const audio = new Audio("static/assets/x.mp3")
+        audio.play();
     }
 
 }
