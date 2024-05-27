@@ -52,6 +52,7 @@ const storeValuesInElements = async () => {
             userAnswer
         }
         sendAnswer(answerObj)
+        answerInput.value = "";
     })
 
     const answer = Object.keys(questionData.answers)
