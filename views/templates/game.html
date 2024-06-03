@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Family Feud</title>
+        <link rel="stylesheet" href="{{url_for('static', filename='css/feud.css')}}" />
+        <!-- <link rel="stylesheet" href="{{url_for('static', filename='assets/background.png')}}" /> -->
+    </head>
+    <body>
+        <div class="hero">
+        <div class="header">
+            GUESS WARRIOR
+        </div>
+        <!-- question goes here -->
+        <div class="question-container">
+            <div class="question" id="question">Name a reason why you love this game</div>
+        </div>
+
+        <div class="answer-input">
+            <form action="/question" method="post" id="answer-form">
+                <!-- <label for="answer-input-field">Input</label> -->
+                <input type="text" class="question" id="answer-input-field" placeholder="Type your answer" name="answer" required>
+                <button type="submit">Send</button>
+            </form>
+        </div>
+
+        <div class="container">
+                <div class="cols">
+
+                    <!-- answer field -->
+                    <div class="answers">
+                        <div class="answer-container">
+                            <div class="answer hidden"></div>
+                            <div class="points">1</div>
+                        </div>
+                    </div>
+                    <!-- answer field -->
+                    <div class="answers">
+                        <div class="answer-container">
+                            <div class="answer hidden"></div>
+                            <div class="points">2</div>
+                        </div>
+                    </div>
+                    <!-- answer field -->
+                    <div class="answers">
+                        <div class="answer-container">
+                            <div class="answer hidden"></div>
+                            <div class="points">3</div>
+                        </div>
+                    </div>
+                </div>
+                
+            <div class="cols">
+                    
+                    <!-- answer field -->
+                <div class="answers">
+                    <div class="answer-container">
+                        <div class="answer hidden"></div>
+                        <div class="points">4</div>
+                    </div>
+                </div>
+                <!-- answer field -->
+                <div class="answers">
+                    <div class="answer-container">
+                        <div class="answer hidden"></div>
+                        <div class="points">5</div>
+                    </div>
+                </div>
+                <!-- answer field -->
+                <div class="answers">
+                    <div class="answer-container">
+                        <div class="answer hidden"></div>
+                        <div class="points">6</div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <script type="text/javascript" src="{{url_for('static', filename='js/jquery-1.8.2.min.js')}}"></script>
+    <script type="text/javascript" src="{{url_for('static', filename='js/all_questions.js')}}"></script>
+    <script type="text/javascript" src="{{url_for('static', filename='js/fued.js')}}"></script>
+</body>
+</html>
