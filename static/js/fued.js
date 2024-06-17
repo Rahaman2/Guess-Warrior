@@ -58,20 +58,7 @@ const storeValuesInElements = async () => {
     const answer = Object.keys(questionData.answers)
     console.log(answer);
     answersEl.forEach( (answerEl, ind) => {
-        // const answerField = answerEl.children[0];
-        // const pointsField = answerEl.children[1];
-        // answerField.textContent = answer[ind];
-        // console.log(answerEl);
-        // console.log(answerField.textContent, pointsField.classList)
-        // const hidden = answerField.classList;
-        // const revealedAnswer = questionData.sorted_answer_list[ind]; 
-        // if(hidden) {
 
-        // } else {
-        //     answerField.textContent = revealedAnswer; // displaying the answer
-        //     pointsField.textContent = questionData.answers[revealedAnswer]; // displaying the points for the answer
-
-        // }
     });
 }
 
@@ -92,12 +79,10 @@ const sendAnswer = async (answer) => {
         const response = await json.json();
         console.log(response);
         const {sorted_answer_list, answers, userAnswer } = response.questionData;
-        // console.log(`The userAnswer  is ${ans}`);
-        // console.log(`The answers  is ${response.questionData.answers}`);
-        // console.log(`The sortedlist  is ${response.questionData.sorted_answer_list}`);
 
+        console.log("The user answer is " +response.userAnswer)
 
-        revealAnswer( answer["userAnswer"] , sorted_answer_list, answers );
+        revealAnswer( response.userAnswer , sorted_answer_list, answers );
         
     } catch (error) {
         console.log(error);

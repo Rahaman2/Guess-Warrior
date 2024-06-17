@@ -53,20 +53,8 @@ def home():
     return render_template("home.html")
 
 
-@app.route("/game")
-def game():
-    # generating full url for internal api request
-
-    
-    # root_url = f"{request.scheme}://{request.host}/question"
-    # # print(request.scheme)
-
-
-    # # making a request to the first endpoint 
-    # response = requests.get(root_url).json()
-    # print(root_url)
-
-    # question = response["question"]
+@app.route("/game", methods=["POST", "GET"])
+def game():        
     return render_template("game.html")
 
 
@@ -93,14 +81,18 @@ def questions():
         return jsonify(question_json_data)
     elif request.method == "POST":
         
-        data = request.get_json()
-        print(data)
+        requestData = request.get_json()
+        user_answer = requestData["userAnswer"]
+        valid_answers = requestData["questionData"]["answers"]
+        question = requestData["questionData"]["question"]
+        print(user_answer)
+        # evaluating the answer if the answser is valid it will return the correct answer else wrong answer
         
-        return jsonify(data)
-        # print(request)
-        # # {"name": 1}.keys()
-        # posted_data = request.form["answer"]
-        # print(posted_data)
+        answer_evaluation = questionObj.Questions().eval_user_answer(user_answer, valid_answers, question)
+        requestData["userAnswer"] = answer_evaluation
+        
+        return jsonify(requestData)
+
 
     
     
