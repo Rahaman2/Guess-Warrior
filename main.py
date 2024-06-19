@@ -53,6 +53,16 @@ def home():
     return render_template("home.html")
 
 
+
+@app.route("/login")
+def login():
+    return render_template("login.html")
+
+@app.route("/signup")
+def signup():
+    return render_template("signup.html")
+
+
 @app.route("/game", methods=["POST", "GET"])
 def game():        
     return render_template("game.html")
