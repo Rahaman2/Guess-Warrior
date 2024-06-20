@@ -58,6 +58,10 @@ def home():
 def login():
     return render_template("login.html")
 
+@app.route('/game2', methods=["GET", "POST"])
+def game2():
+    return render_template("game2.html")
+
 @app.route("/signup")
 def signup():
     return render_template("signup.html")
@@ -92,6 +96,7 @@ def questions():
     elif request.method == "POST":
         
         requestData = request.get_json()
+        
         user_answer = requestData["userAnswer"]
         valid_answers = requestData["questionData"]["answers"]
         question = requestData["questionData"]["question"]

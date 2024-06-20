@@ -1,0 +1,59 @@
+body {
+    background: #a7cfdf;
+    background: -moz-linear-gradient(top, #a7cfdf 0%, #23538a 100%);
+    background: -webkit-linear-gradient(top, #a7cfdf 0%, #23538a 100%);
+    background: linear-gradient(to bottom, #a7cfdf 0%, #23538a 100%);
+    filter: progid: DXImageTransform.Microsoft.gradient( startColorstr='#a7cfdf', endColorstr='#23538a', GradientType=0);
+    padding: 25px;
+  }
+
+
+
+.oval {
+    width: 80vw; /* Set your desired width */
+    height: 40vw; /* Set your desired height */
+    background-color: #0C4779; /* Set background color */
+    border-radius: 50%; /* Make it round (50% of width/height) */
+}
+
+#useranswer {
+    background-color: #DEEEFF;
+}
+
+.answers-list-container {
+    width: 70vw;
+    min-height: 10vh;
+    background-color: black;
+    margin: 3rem auto auto auto;
+}
+
+.answer-container {
+    background-color: #89B1D4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: .3s;
+}
+
+.answer-container.flipped {
+    /* transform: rotateX(180deg); */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transform: rotateX(360deg);
+}
+
+
+
+.number {
+    background-color: #267DC9;
+    border-radius: 50%;
+    width: 40px;
+    height: 30px;
+}
+
+/* player points displayer */
+
+.player-points {
+    background-color: #398BD1;
+}

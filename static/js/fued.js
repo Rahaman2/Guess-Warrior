@@ -66,7 +66,7 @@ storeValuesInElements();
 
 const sendAnswer = async (answer) => {
     const data = answer;
-    // console.log(data)
+    console.log(data)
     try {
         const json = await fetch("/question", {
             method: "POST",

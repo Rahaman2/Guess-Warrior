@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family fued</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='css/styles.css')}}">
+    <script src="https://unpkg.com/flipjs"></script>
+    
+    <!-- tailwind css cdn -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- sweet alert a javascript popup library -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+</head>
+<body>
+    <div class="game-container flex justify-center items-center">
+        <div class="player-points w-20 py-4 border-2 border-white flex justify-center items-center" id="player-1">
+            <p class="text-center text-4xl text-white drop-shadow-lg">0</p>
+        </div>
+        <div class="oval">
+            <form action="/question" method="post" class="mt-24">
+                <!-- <label for="useranswer" class="text-center block  text-white">Name You favourite thing about this game</label> -->
+                <input type="text" id="useranswer" autocomplete="off" placeholder="Answer..." class="text-center focus:outline-none font-bold py-4 px-4 rounded shadow mx-auto block w-3/5">
+            </form>
+            <div class="answers-list-container grid grid-cols-2 gap-4 p-4">
+                <div class="answer-container  p-4 shadow-md">
+                    <div class="p answer"></div>
+                    <div class="number text-center font-bold text-xl">1</div>
+                </div>
+                <div class="answer-container  p-4 shadow-md">
+                    <div class="p answer"></div>
+                    <div class="number text-center font-bold text-xl">2</div>
+                </div>
+                <div class="answer-container  p-4 shadow-md">
+                    <div class="p answer"></div>
+                    <div class="number text-center font-bold text-xl">3</div>
+                </div>
+                <div class="answer-container  p-4 shadow-md">
+                    <div class="p answer"></div>
+                    <div class="number text-center font-bold text-xl">4</div>
+                </div>
+                <div class="answer-container  p-4 shadow-md">
+                    <div class="p answer"></div>
+                    <div class="number text-center font-bold text-xl">5</div>
+                </div>
+                <div class="answer-container  p-4 shadow-md">
+                    <div class="p answer"></div>
+                    <div class="number text-center font-bold text-xl">6</div>
+                </div>
+        </div>
+        
+    </div>
+    <div class="player-points w-20 py-4 border-2 border-white flex justify-center items-center" id="player-1">
+        <p class="text-center text-4xl text-white drop-shadow-lg">0</p>
+    </div>
+    <script src="{{url_for('static', filename='js/script.js')}}"></script>
+
+</body>
+</html>
