@@ -6,6 +6,8 @@ import json
 from string import ascii_uppercase
 from controllers import *
 import models.questions as questionObj
+from models.model import create_score, users_collection, scores_collection, add_User
+from flask_login import LoginManager, UserMixin, login_user, login_required
 
 
 
@@ -58,14 +60,24 @@ def home():
 def login():
     return render_template("login.html")
 
+
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    if request.method == "GET":
+        return render_template("signup.html")
+    elif request.method == "POST":
+        username = request.form.get("username")
+        email = request.form.get("email")
+        password = request.form.get("password")
+        add_User(username, password, email)
+        return render_template("login.html")
+
+
+
+
 @app.route('/game2', methods=["GET", "POST"])
 def game2():
     return render_template("game2.html")
-
-@app.route("/signup")
-def signup():
-    return render_template("signup.html")
-
 
 @app.route("/game", methods=["POST", "GET"])
 def game():        
