@@ -6,7 +6,7 @@ import json
 from string import ascii_uppercase
 from controllers import *
 import models.questions as questionObj
-from models.model import create_score, users_collection, scores_collection, add_User
+# from models.model import create_score, users_collection, scores_collection, add_Userf
 from flask_login import LoginManager, UserMixin, login_user, login_required
 
 
