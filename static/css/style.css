@@ -1,79 +1,566 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Family Feud Game - Classic TV Show Style */
 
-.content {
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial Black', Arial, sans-serif;
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    overflow: hidden;
+}
+
+.game-container {
+    max-width: 1200px;
+    width: 100%;
+    height: 100%;
+    max-height: 100vh;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.game-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.game-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.game-container::-webkit-scrollbar-thumb {
+    background: #fbbf24;
+    border-radius: 10px;
+}
+
+.game-container::-webkit-scrollbar-thumb:hover {
+    background: #f59e0b;
+}
+
+/* Header */
+.game-header {
+    text-align: center;
+    margin-bottom: 1vh;
+    flex-shrink: 0;
+}
+
+.game-title {
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    color: #fbbf24;
+    text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
+    letter-spacing: 4px;
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5), 0 0 20px #fbbf24;
+    }
+    to {
+        text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5), 0 0 40px #fbbf24;
+    }
+}
+
+/* Question Board */
+.question-board {
+    background: #1e3a8a;
+    border: 4px solid #fbbf24;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 1vh;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    flex-shrink: 0;
+}
+
+.question-text {
+    font-size: clamp(1rem, 2vw, 1.5rem);
+    color: #ffffff;
+    text-align: center;
+    min-height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
+    line-height: 1.3;
 }
 
-.buttons {
+/* Answer Board */
+.answer-board {
+    margin-bottom: 1vh;
+    flex: 1;
     display: flex;
     flex-direction: column;
-    align-items: center; 
+    min-height: 0;
+}
+
+.answers-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    flex: 1;
+}
+
+.answer-card {
+    background: #1e3a8a;
+    border: 3px solid #fbbf24;
+    border-radius: 8px;
+    padding: 12px;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+    perspective: 1000px;
+}
+
+.answer-card:hover {
+    transform: scale(1.02);
+}
+
+.answer-card.hidden .answer-content {
+    opacity: 0;
+}
+
+.answer-card.revealed {
+    animation: flipCard 0.6s ease-in-out;
+    background: #dc2626;
+}
+
+@keyframes flipCard {
+    0% {
+        transform: rotateY(0deg);
+    }
+    50% {
+        transform: rotateY(90deg);
+    }
+    100% {
+        transform: rotateY(0deg);
+    }
+}
+
+.answer-number {
+    font-size: clamp(1.2rem, 2vw, 1.5rem);
+    color: #fbbf24;
+    font-weight: bold;
+    margin-right: 10px;
+    min-width: 30px;
+}
+
+.answer-text {
+    flex: 1;
+    font-size: clamp(0.8rem, 1.5vw, 1.1rem);
+    color: #ffffff;
+    text-transform: uppercase;
+    line-height: 1.2;
+}
+
+.answer-points {
+    font-size: clamp(1rem, 1.8vw, 1.3rem);
+    color: #fbbf24;
+    font-weight: bold;
+    margin-left: 10px;
+}
+
+/* Game Controls */
+.game-controls {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 1vh;
+    backdrop-filter: blur(10px);
+    flex-shrink: 0;
+}
+
+.input-section {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.answer-input {
+    flex: 1;
+    padding: 12px;
+    font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+    border: 3px solid #fbbf24;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #1e3a8a;
+    font-weight: bold;
+    outline: none;
+    transition: box-shadow 0.3s ease;
+}
+
+.answer-input:focus {
+    box-shadow: 0 0 20px #fbbf24;
+}
+
+.submit-btn {
+    padding: 12px 25px;
+    font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+    font-weight: bold;
+    background: #dc2626;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+
+.submit-btn:hover {
+    background: #b91c1c;
+    transform: scale(1.05);
+    box-shadow: 0 5px 20px rgba(220, 38, 38, 0.5);
+}
+
+.submit-btn:active {
+    transform: scale(0.98);
+}
+
+.submit-btn:disabled {
+    background: #6b7280;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Status Section */
+.status-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+}
+
+.strikes-container,
+.score-container {
+    flex: 1;
+    text-align: center;
+}
+
+.strikes-label,
+.score-label {
+    font-size: clamp(0.9rem, 1.5vw, 1.2rem);
+    color: #fbbf24;
+    margin-bottom: 8px;
+    letter-spacing: 2px;
+}
+
+.strikes {
+    display: flex;
     justify-content: center;
     gap: 10px;
 }
 
-.join {
+.strike-x {
+    width: clamp(40px, 6vw, 50px);
+    height: clamp(40px, 6vw, 50px);
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
     display: flex;
-    flex-direction: row;
-    width: 100%;
-}
-
-.create-btn {
-    width: 100%;
-}
-
-
-.message-box {
-    border-color: black;
-    border-width: 2px;
-    border-style: solid;
-    border-radius: 10px;
-    background-color: whitesmoke;
-    height: 80vh;
-    display: flex;
-    flex-direction: column;
-    width: 80vw;
-    align-items: stretch;
-}
-
-
-.messages {
-    overflow-y: scroll;
-    flex: 1;
-    width: 100%;
-}
-
-
-.inputs {
-    padding: 10px;
-    display: flex;
-}
-
-
-h2  {
-    text-align: center;
-}
-
-
-#message {
-    flex: 1;
-}
-
-
-.text{
-    display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: space-between;
-    padding-left: 10px;
-    padding-right: 10px;
+    justify-content: center;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    color: transparent;
+    font-weight: bold;
+    transition: all 0.3s ease;
 }
 
-.muted{
-    font-size: 10px;
-    color:darkgray;
+.strike-x.active {
+    color: #dc2626;
+    background: rgba(220, 38, 38, 0.3);
+    animation: strikeShake 0.5s ease;
+}
+
+@keyframes strikeShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px) rotate(-5deg); }
+    75% { transform: translateX(10px) rotate(5deg); }
+}
+
+.score {
+    font-size: clamp(2rem, 5vw, 3rem);
+    color: #fbbf24;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Message */
+.message {
+    text-align: center;
+    font-size: clamp(0.9rem, 1.5vw, 1.2rem);
+    color: #ffffff;
+    min-height: 30px;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.message.success {
+    background: rgba(34, 197, 94, 0.3);
+    border: 2px solid #22c55e;
+}
+
+.message.error {
+    background: rgba(220, 38, 38, 0.3);
+    border: 2px solid #dc2626;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal.active {
+    display: flex;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+    border: 6px solid #fbbf24;
+    border-radius: 20px;
+    padding: 50px;
+    text-align: center;
+    max-width: 500px;
+    animation: scaleIn 0.3s ease;
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0.8);
+    }
+    to {
+        transform: scale(1);
+    }
+}
+
+.modal-title {
+    font-size: 3rem;
+    color: #fbbf24;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.modal-message {
+    font-size: 1.5rem;
+    color: #ffffff;
+    margin-bottom: 30px;
+}
+
+.modal-score {
+    font-size: 2rem;
+    color: #ffffff;
+    margin-bottom: 30px;
+}
+
+.modal-score-label {
+    display: block;
+    color: #fbbf24;
+    margin-bottom: 10px;
+}
+
+.modal-score-value {
+    display: block;
+    font-size: 4rem;
+    color: #fbbf24;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.play-again-btn {
+    padding: 20px 50px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    background: #22c55e;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.play-again-btn:hover {
+    background: #16a34a;
+    transform: scale(1.05);
+    box-shadow: 0 5px 20px rgba(34, 197, 94, 0.5);
+}
+
+.play-again-btn:active {
+    transform: scale(0.98);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    body {
+        padding: 5px;
+    }
+
+    .game-container {
+        padding: 5px;
+    }
+
+    .game-header {
+        margin-bottom: 0.5vh;
+    }
+
+    .game-title {
+        letter-spacing: 2px;
+    }
+
+    .question-board {
+        padding: 10px;
+        margin-bottom: 0.5vh;
+    }
+
+    .answers-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .answer-card {
+        padding: 10px;
+        min-height: 50px;
+    }
+
+    .answer-number {
+        margin-right: 8px;
+        min-width: 25px;
+    }
+
+    .answer-points {
+        margin-left: 8px;
+    }
+
+    .game-controls {
+        padding: 10px;
+        margin-bottom: 0.5vh;
+    }
+
+    .input-section {
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 12px;
+    }
+
+    .status-section {
+        flex-direction: row;
+        gap: 15px;
+    }
+
+    .strikes {
+        gap: 8px;
+    }
+
+    .modal-content {
+        padding: 20px;
+        margin: 10px;
+        max-width: 90vw;
+    }
+
+    .modal-title {
+        font-size: 1.8rem;
+    }
+
+    .modal-message {
+        font-size: 1.1rem;
+    }
+
+    .modal-score-value {
+        font-size: 2.5rem;
+    }
+
+    .play-again-btn {
+        padding: 15px 30px;
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .game-title {
+        letter-spacing: 1px;
+    }
+
+    .answer-card {
+        padding: 8px;
+    }
+
+    .status-section {
+        gap: 10px;
+    }
+
+    .strikes-label,
+    .score-label {
+        font-size: 0.8rem;
+        margin-bottom: 5px;
+    }
+}
+
+@media (max-height: 700px) {
+    .game-header {
+        margin-bottom: 0.3vh;
+    }
+
+    .question-board,
+    .answer-board,
+    .game-controls {
+        margin-bottom: 0.5vh;
+    }
+
+    .question-board {
+        padding: 10px;
+    }
+
+    .game-controls {
+        padding: 10px;
+    }
+
+    .input-section {
+        margin-bottom: 10px;
+    }
+
+    .answer-card {
+        min-height: 50px;
+        padding: 10px;
+    }
 }

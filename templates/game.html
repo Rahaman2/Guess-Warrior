@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Feud Game</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="game-container">
+        <!-- Header with Title -->
+        <header class="game-header">
+            <h1 class="game-title">FAMILY FEUD</h1>
+        </header>
+
+        <!-- Question Display -->
+        <div class="question-board">
+            <div class="question-text" id="questionText">Loading question...</div>
+        </div>
+
+        <!-- Answer Board -->
+        <div class="answer-board">
+            <div class="answers-grid" id="answersGrid">
+                <!-- Answers will be dynamically generated here -->
+            </div>
+        </div>
+
+        <!-- Game Controls -->
+        <div class="game-controls">
+            <!-- Input Area -->
+            <div class="input-section">
+                <input
+                    type="text"
+                    id="answerInput"
+                    class="answer-input"
+                    placeholder="Type your answer..."
+                    autocomplete="off"
+                >
+                <button id="submitBtn" class="submit-btn">SUBMIT</button>
+            </div>
+
+            <!-- Status Display -->
+            <div class="status-section">
+                <!-- Strikes -->
+                <div class="strikes-container">
+                    <div class="strikes-label">STRIKES</div>
+                    <div class="strikes" id="strikes">
+                        <div class="strike-x" id="strike1">X</div>
+                        <div class="strike-x" id="strike2">X</div>
+                        <div class="strike-x" id="strike3">X</div>
+                    </div>
+                </div>
+
+                <!-- Score -->
+                <div class="score-container">
+                    <div class="score-label">SCORE</div>
+                    <div class="score" id="score">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message Display -->
+        <div class="message" id="message"></div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div class="modal" id="gameOverModal">
+        <div class="modal-content">
+            <h2 class="modal-title" id="modalTitle">Game Over!</h2>
+            <p class="modal-message" id="modalMessage"></p>
+            <div class="modal-score">
+                <span class="modal-score-label">Final Score:</span>
+                <span class="modal-score-value" id="modalScore">0</span>
+            </div>
+            <button class="play-again-btn" id="playAgainBtn">PLAY AGAIN</button>
+        </div>
+    </div>
+
+    <!-- Audio Elements -->
+    <audio id="dingSound" preload="auto">
+        <source src="{{ url_for('static', filename='sounds/ding.mp3') }}" type="audio/mpeg">
+    </audio>
+    <audio id="buzzerSound" preload="auto">
+        <source src="{{ url_for('static', filename='sounds/buzzer.mp3') }}" type="audio/mpeg">
+    </audio>
+    <audio id="strikeSound" preload="auto">
+        <source src="{{ url_for('static', filename='sounds/strike.mp3') }}" type="audio/mpeg">
+    </audio>
+
+    <script src="{{ url_for('static', filename='js/game.js') }}"></script>
+</body>
+</html>
