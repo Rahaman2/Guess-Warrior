@@ -196,7 +196,7 @@ class FamilyFeudGame {
                 result.message === 'That answer is already revealed!') {
                 this.showMessage(result.message, 'error');
             } else {
-                this.playSound('buzzer');
+                // this.playSound('buzzer');
                 this.playSound('strike');
                 this.showMessage(result.message, 'error');
                 this.updateStrikes(this.gameState.strikes);
