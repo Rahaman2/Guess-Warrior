@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Feud - Multiplayer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/multiplayer.css') }}">
+</head>
+<body>
+    <!-- LOBBY VIEW -->
+    <div class="game-container" id="lobbyView">
+        <header class="game-header">
+            <h1 class="game-title">FAMILY FEUD</h1>
+            <div class="mp-subtitle">MULTIPLAYER</div>
+        </header>
+
+        <div class="lobby-card">
+            <div class="lobby-section">
+                <label class="lobby-label" for="playerNameInput">YOUR NAME</label>
+                <input type="text" id="playerNameInput" class="answer-input" placeholder="Enter your name..." maxlength="20" autocomplete="off">
+            </div>
+
+            <div class="lobby-actions">
+                <button id="createRoomBtn" class="submit-btn lobby-btn">CREATE ROOM</button>
+                <div class="lobby-divider">OR</div>
+                <div class="join-section">
+                    <input type="text" id="roomCodeInput" class="answer-input room-code-input" placeholder="ROOM CODE" maxlength="4" autocomplete="off">
+                    <button id="joinRoomBtn" class="submit-btn lobby-btn join-btn">JOIN</button>
+                </div>
+            </div>
+
+            <!-- Waiting Room (hidden until room created/joined) -->
+            <div id="waitingRoom" class="waiting-room" style="display: none;">
+                <div class="room-code-display">
+                    <div class="lobby-label">ROOM CODE</div>
+                    <div id="roomCodeDisplay" class="room-code-value">----</div>
+                </div>
+                <div class="player-list">
+                    <div class="lobby-label">PLAYERS</div>
+                    <div id="playerList"></div>
+                </div>
+                <div id="waitingMessage" class="waiting-message">Waiting for opponent...</div>
+                <button id="startGameBtn" class="submit-btn start-btn" style="display: none;">START GAME</button>
+            </div>
+        </div>
+
+        <div class="message" id="lobbyMessage"></div>
+
+        <a href="/" class="back-link">Back to Single Player</a>
+    </div>
+
+    <!-- GAME VIEW -->
+    <div class="game-container" id="gameView" style="display: none;">
+        <header class="game-header">
+            <h1 class="game-title">FAMILY FEUD</h1>
+        </header>
+
+        <!-- Timer -->
+        <div class="timer-bar">
+            <div class="timer-display" id="timer">60</div>
+        </div>
+
+        <!-- Score Panel -->
+        <div class="score-panel">
+            <div class="player-score-box my-score-box">
+                <div class="player-name" id="myName">YOU</div>
+                <div class="player-score" id="myScore">0</div>
+            </div>
+            <div class="vs-divider">VS</div>
+            <div class="player-score-box opp-score-box">
+                <div class="player-name" id="opponentName">OPPONENT</div>
+                <div class="player-score" id="opponentScore">0</div>
+            </div>
+        </div>
+
+        <!-- Question Display -->
+        <div class="question-board">
+            <div class="question-text" id="questionText">Loading question...</div>
+        </div>
+
+        <!-- Answer Board -->
+        <div class="answer-board">
+            <div class="answers-grid" id="answersGrid"></div>
+        </div>
+
+        <!-- Game Controls -->
+        <div class="game-controls">
+            <div class="input-section">
+                <input type="text" id="answerInput" class="answer-input" placeholder="Type your answer..." autocomplete="off">
+                <button id="submitBtn" class="submit-btn">SUBMIT</button>
+            </div>
+            <div class="status-section">
+                <div class="strikes-container">
+                    <div class="strikes-label">STRIKES</div>
+                    <div class="strikes" id="strikes">
+                        <div class="strike-x" id="strike1">X</div>
+                        <div class="strike-x" id="strike2">X</div>
+                        <div class="strike-x" id="strike3">X</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="message" id="message"></div>
+    </div>
+
+    <!-- GAME OVER MODAL -->
+    <div class="modal" id="gameOverModal">
+        <div class="modal-content">
+            <h2 class="modal-title" id="modalTitle">Game Over!</h2>
+            <p class="modal-message" id="modalMessage"></p>
+            <div class="results-table" id="resultsTable"></div>
+            <div class="all-answers" id="allAnswers"></div>
+            <button class="play-again-btn" id="playAgainBtn">PLAY AGAIN</button>
+        </div>
+    </div>
+
+    <!-- Audio Elements -->
+    <audio id="dingSound" preload="auto">
+        <source src="{{ url_for('static', filename='sounds/ding.mp3') }}" type="audio/mpeg">
+    </audio>
+    <audio id="buzzerSound" preload="auto">
+        <source src="{{ url_for('static', filename='sounds/buzzer.mp3') }}" type="audio/mpeg">
+    </audio>
+    <audio id="strikeSound" preload="auto">
+        <source src="{{ url_for('static', filename='sounds/strike.mp3') }}" type="audio/mpeg">
+    </audio>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='js/multiplayer.js') }}"></script>
+</body>
+</html>
