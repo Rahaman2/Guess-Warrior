@@ -9,7 +9,9 @@ A classic Family Feud game with semantic answer matching, spelling understanding
 - 1,063 questions loaded from CSV
 - Sound effects (ding, buzzer, strike)
 - Real-time multiplayer via WebSocket (room-based, 2 players)
-- 60-second timed multiplayer rounds
+- 3-round matches with progressive score multipliers (1x, 2x, 3x)
+- 60-second timed rounds with between-round summaries
+- Modular round configuration (easily adjust round count, multipliers, timing)
 - Modular architecture (single-player REST + multiplayer SocketIO side by side)
 
 ## Quick Start
@@ -42,9 +44,11 @@ python app.py
 1. Go to `/multiplayer` and enter your name
 2. **Player 1**: Click CREATE ROOM and share the 4-letter room code
 3. **Player 2**: Enter the room code and click JOIN
-4. Host clicks START GAME -- both players get the same question
-5. Race to guess answers for 60 seconds -- scores are independent
-6. Highest score when the timer runs out (or someone clears the board) wins!
+4. Host clicks START GAME -- the match begins (3 rounds)
+5. Each round: new question, 60 seconds, race to guess answers
+6. Scoring: Round 1 = 1x points, Round 2 = 2x points, Round 3 = 3x points
+7. Between rounds: see the score summary, then the next round starts automatically (or host clicks NEXT ROUND)
+8. After all 3 rounds, the player with the highest total score wins!
 
 ## Project Structure
 
@@ -56,7 +60,8 @@ Guess-Warrior/
 ├── models/                          # Data models
 │   ├── question.py                 # Question & Answer models
 │   ├── game.py                     # Game state model
-│   └── multiplayer.py              # Room, Player, RoomState models
+│   ├── multiplayer.py              # Room, Player, RoomState models
+│   └── round_config.py             # Round system configuration
 ├── services/                        # Business logic
 │   ├── question_service.py         # Load questions from CSV
 │   ├── matching_service.py         # Fuzzy + semantic matching
@@ -90,9 +95,12 @@ Guess-Warrior/
 - `GET /multiplayer` - Multiplayer game page
 - `create_room` - Create a new room (returns room code)
 - `join_room` - Join an existing room by code
-- `start_game` - Host starts the game
+- `start_game` - Host starts the match (round 1)
 - `submit_guess` - Submit a guess during gameplay
-- `play_again` - Reset room for another round
+- `next_round` - Host advances to the next round early
+- `round_ended` - Server broadcasts round summary (after rounds 1 & 2)
+- `match_over` - Server broadcasts final results (after round 3)
+- `play_again` - Reset room for a new match
 
 ## Fuzzy Matching
 
@@ -106,8 +114,8 @@ Uses `rapidfuzz` library with 80% similarity threshold, with semantic matching f
 
 - [x] WebSocket multiplayer support
 - [x] Timed game rounds
+- [x] Multiple rounds per match with progressive multipliers
 - [ ] Mobile app with auto-matching (no room codes)
-- [ ] Multiple rounds per game session
 - [ ] Team play mode
 - [ ] Leaderboard
 
