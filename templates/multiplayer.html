@@ -54,6 +54,10 @@
     <div class="game-container" id="gameView" style="display: none;">
         <header class="game-header">
             <h1 class="game-title">FAMILY FEUD</h1>
+            <div class="round-indicator">
+                <span id="roundIndicator">ROUND 1 / 3</span>
+                <span class="multiplier-badge" id="multiplierBadge">1x POINTS</span>
+            </div>
         </header>
 
         <!-- Timer -->
@@ -66,11 +70,13 @@
             <div class="player-score-box my-score-box">
                 <div class="player-name" id="myName">YOU</div>
                 <div class="player-score" id="myScore">0</div>
+                <div class="player-total-score">Total: <span id="myTotalScore">0</span></div>
             </div>
             <div class="vs-divider">VS</div>
             <div class="player-score-box opp-score-box">
                 <div class="player-name" id="opponentName">OPPONENT</div>
                 <div class="player-score" id="opponentScore">0</div>
+                <div class="player-total-score">Total: <span id="opponentTotalScore">0</span></div>
             </div>
         </div>
 

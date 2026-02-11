@@ -1,18 +1,20 @@
 """Multiplayer room and player models."""
 
 from dataclasses import dataclass, field
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 from enum import Enum
 import string
 import random
 from .question import Question
 from .game import Game
+from .round_config import TOTAL_ROUNDS, ROUND_MULTIPLIERS
 
 
 class RoomState(Enum):
     """State of a multiplayer room."""
     WAITING = "waiting"
     PLAYING = "playing"
+    ROUND_ENDED = "round_ended"
     FINISHED = "finished"
 
 
@@ -23,6 +25,8 @@ class Player:
     name: str
     game: Optional[Game] = None
     is_host: bool = False
+    total_score: int = 0
+    round_scores: List[int] = field(default_factory=list)
 
 
 @dataclass
@@ -35,6 +39,10 @@ class Room:
     timer_seconds: int = 60
     time_remaining: int = 60
     started_at: Optional[float] = None
+    current_round: int = 0
+    total_rounds: int = TOTAL_ROUNDS
+    round_multipliers: List[int] = field(default_factory=lambda: list(ROUND_MULTIPLIERS))
+    used_questions: List[Question] = field(default_factory=list)
 
     @staticmethod
     def generate_code(length: int = 4) -> str:
@@ -58,11 +66,33 @@ class Room:
                 return player
         return None
 
-    def init_player_games(self, question: Question) -> None:
-        """Give each player their own Game instance with the same Question."""
+    def current_multiplier(self) -> int:
+        """Get the score multiplier for the current round."""
+        if 1 <= self.current_round <= len(self.round_multipliers):
+            return self.round_multipliers[self.current_round - 1]
+        return 1
+
+    def is_final_round(self) -> bool:
+        return self.current_round >= self.total_rounds
+
+    def init_round(self, question: Question) -> None:
+        """Initialize a new round with a fresh question and Game instances."""
         self.question = question
+        self.used_questions.append(question)
         for player in self.players.values():
             player.game = Game(question=question)
+
+    def finalize_round_scores(self) -> Dict[str, int]:
+        """Apply multiplier to each player's raw round score. Returns {sid: multiplied_score}."""
+        multiplier = self.current_multiplier()
+        round_results = {}
+        for sid, player in self.players.items():
+            raw = player.game.score if player.game else 0
+            multiplied = raw * multiplier
+            player.round_scores.append(multiplied)
+            player.total_score += multiplied
+            round_results[sid] = multiplied
+        return round_results
 
     def to_lobby_dict(self) -> dict:
         return {
@@ -103,4 +133,9 @@ class Room:
             "opponent_score": opponent.game.score if opponent and opponent.game else 0,
             "opponent_name": opponent.name if opponent else None,
             "my_name": player.name if player else None,
+            "current_round": self.current_round,
+            "total_rounds": self.total_rounds,
+            "multiplier": self.current_multiplier(),
+            "my_total_score": player.total_score if player else 0,
+            "opponent_total_score": opponent.total_score if opponent else 0,
         }

@@ -154,6 +154,69 @@
     color: #fbbf24;
 }
 
+/* Round Indicator */
+.round-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+}
+
+.round-indicator > span:first-child {
+    font-size: clamp(0.7rem, 1.5vw, 0.9rem);
+    color: #ffffff;
+    letter-spacing: 3px;
+    opacity: 0.9;
+}
+
+.multiplier-badge {
+    font-size: clamp(0.65rem, 1.2vw, 0.8rem);
+    font-weight: bold;
+    letter-spacing: 2px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    display: inline-block;
+}
+
+.multiplier-1x {
+    background: rgba(34, 197, 94, 0.25);
+    color: #22c55e;
+    border: 1px solid #22c55e;
+}
+
+.multiplier-2x {
+    background: rgba(251, 191, 36, 0.25);
+    color: #fbbf24;
+    border: 1px solid #fbbf24;
+}
+
+.multiplier-3x {
+    background: rgba(220, 38, 38, 0.25);
+    color: #f87171;
+    border: 1px solid #dc2626;
+    animation: multiplierGlow 2s ease-in-out infinite;
+}
+
+@keyframes multiplierGlow {
+    0%, 100% { box-shadow: 0 0 5px rgba(220, 38, 38, 0.3); }
+    50% { box-shadow: 0 0 15px rgba(220, 38, 38, 0.6); }
+}
+
+/* Total Score */
+.player-total-score {
+    font-size: clamp(0.55rem, 1vw, 0.7rem);
+    color: rgba(255, 255, 255, 0.5);
+    letter-spacing: 1px;
+    margin-top: 2px;
+}
+
+.player-total-score span {
+    color: rgba(251, 191, 36, 0.7);
+    font-weight: bold;
+}
+
 /* Timer */
 .timer-bar {
     text-align: center;

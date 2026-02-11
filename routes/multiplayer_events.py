@@ -4,6 +4,7 @@ import time as _time
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask import request
 from models.multiplayer import RoomState
+from models.round_config import BETWEEN_ROUND_DELAY
 from services.multiplayer_service import MultiplayerService
 
 socketio: SocketIO = None
@@ -84,7 +85,7 @@ def _register_events(sio: SocketIO):
 
         # Start server-side timer
         _start_timer(started_room.code)
-        print(f"[MP] Game started in room {started_room.code}")
+        print(f"[MP] Match started in room {started_room.code} - Round 1")
 
     @sio.on('submit_guess')
     def handle_submit_guess(data):
@@ -109,10 +110,28 @@ def _register_events(sio: SocketIO):
                     'opponent_score': player.game.score if player and player.game else 0,
                 }, room=opponent.sid)
 
-            # Board cleared -> end game early
+            # Board cleared -> end round
             if result.get('board_cleared'):
-                room.state = RoomState.FINISHED
-                _end_game(room.code)
+                _end_round(room.code)
+
+    @sio.on('next_round')
+    def handle_next_round(data=None):
+        room = mp_service.get_room_for_player(request.sid)
+        if not room:
+            return
+        player = room.players.get(request.sid)
+        if not player or not player.is_host:
+            emit('error', {'message': 'Only host can advance'})
+            return
+        if room.state != RoomState.ROUND_ENDED:
+            return
+        started_room = mp_service.advance_round(room.code)
+        if not started_room:
+            return
+        for sid in started_room.players:
+            sio.emit('game_started', started_room.to_game_dict(sid), room=sid)
+        _start_timer(started_room.code)
+        print(f"[MP] Round {started_room.current_round} started in room {room.code} (host advanced)")
 
     @sio.on('play_again')
     def handle_play_again(data=None):
@@ -122,8 +141,12 @@ def _register_events(sio: SocketIO):
         room.state = RoomState.WAITING
         room.time_remaining = room.timer_seconds
         room.started_at = None
+        room.current_round = 0
+        room.used_questions = []
         for p in room.players.values():
             p.game = None
+            p.total_score = 0
+            p.round_scores = []
         sio.emit('room_reset', room.to_lobby_dict(), room=room.code)
 
 
@@ -137,18 +160,46 @@ def _start_timer(room_code: str):
                 break
             socketio.emit('timer_tick', {'time_remaining': remaining}, room=room_code)
             if remaining <= 0:
-                _end_game(room_code)
+                _end_round(room_code)
                 break
 
     socketio.start_background_task(timer_loop)
 
 
-def _end_game(room_code: str):
-    """Finalize and broadcast results."""
-    room = mp_service.rooms.get(room_code)
-    if room:
-        room.state = RoomState.FINISHED
-    results = mp_service.get_results(room_code)
-    if results:
-        socketio.emit('game_over', results, room=room_code)
-        print(f"[MP] Game over in room {room_code} - Winner: {results.get('winner', 'Tie')}")
+def _end_round(room_code: str):
+    """Finalize the current round and emit appropriate events."""
+    round_summary = mp_service.end_round(room_code)
+    if not round_summary:
+        return
+
+    if round_summary["is_final_round"]:
+        # Match is over -- emit final results
+        results = mp_service.get_results(room_code)
+        if results:
+            # Include the last round summary so the client can show it
+            results["last_round_summary"] = round_summary
+            socketio.emit('match_over', results, room=room_code)
+            print(f"[MP] Match over in room {room_code} - Winner: {results.get('winner', 'Tie')}")
+    else:
+        # Emit round summary, then auto-advance after delay
+        socketio.emit('round_ended', round_summary, room=room_code)
+        print(f"[MP] Round {round_summary['current_round']} ended in room {room_code}")
+        _schedule_next_round(room_code)
+
+
+def _schedule_next_round(room_code: str):
+    """Auto-advance to next round after a delay."""
+    def advance():
+        _time.sleep(BETWEEN_ROUND_DELAY)
+        room = mp_service.rooms.get(room_code)
+        if not room or room.state != RoomState.ROUND_ENDED:
+            return  # host already advanced, or room gone
+        started_room = mp_service.advance_round(room_code)
+        if not started_room:
+            return
+        for sid in started_room.players:
+            socketio.emit('game_started', started_room.to_game_dict(sid), room=sid)
+        _start_timer(started_room.code)
+        print(f"[MP] Round {started_room.current_round} auto-started in room {room_code}")
+
+    socketio.start_background_task(advance)

@@ -42,18 +42,49 @@ class MultiplayerService:
         return room, ""
 
     def start_game(self, room_code: str) -> Optional[Room]:
-        """Initialize question and player games."""
+        """Start the match by initializing round 1."""
         room = self.rooms.get(room_code)
         if not room or not room.is_full():
             return None
-        question = self.question_service.get_random_question()
+        # Reset match-level state
+        room.current_round = 0
+        room.used_questions = []
+        for p in room.players.values():
+            p.total_score = 0
+            p.round_scores = []
+        return self._start_next_round(room)
+
+    def _start_next_round(self, room: Room) -> Optional[Room]:
+        """Advance to the next round with a new question."""
+        room.current_round += 1
+        question = self._get_unique_question(room)
         if not question:
             return None
-        room.init_player_games(question)
+        room.init_round(question)
         room.state = RoomState.PLAYING
         room.time_remaining = room.timer_seconds
         room.started_at = time.time()
         return room
+
+    def _get_unique_question(self, room: Room) -> Optional[Any]:
+        """Get a question not yet used in this match."""
+        used_texts = {q.question_text for q in room.used_questions}
+        attempts = 0
+        while attempts < 50:
+            q = self.question_service.get_random_question()
+            if q and q.question_text not in used_texts:
+                return q
+            attempts += 1
+        return self.question_service.get_random_question()
+
+    def advance_round(self, room_code: str) -> Optional[Room]:
+        """Called to start the next round. Returns the room or None."""
+        room = self.rooms.get(room_code)
+        if not room or room.state != RoomState.ROUND_ENDED:
+            return None
+        if room.is_final_round():
+            return None
+        return self._start_next_round(room)
 
     def process_guess(self, sid: str, guess: str) -> Optional[Dict[str, Any]]:
         """Process a guess for a multiplayer player."""
@@ -117,11 +148,50 @@ class MultiplayerService:
         room.time_remaining -= 1
         if room.time_remaining <= 0:
             room.time_remaining = 0
-            room.state = RoomState.FINISHED
         return room.time_remaining
 
+    def end_round(self, room_code: str) -> Optional[Dict[str, Any]]:
+        """Finalize current round scores and return round summary."""
+        room = self.rooms.get(room_code)
+        if not room:
+            return None
+
+        round_scores = room.finalize_round_scores()
+
+        if room.is_final_round():
+            room.state = RoomState.FINISHED
+        else:
+            room.state = RoomState.ROUND_ENDED
+
+        players_summary = []
+        for sid, p in room.players.items():
+            players_summary.append({
+                "name": p.name,
+                "sid": sid,
+                "raw_score": p.game.score if p.game else 0,
+                "multiplier": room.current_multiplier(),
+                "round_score": round_scores.get(sid, 0),
+                "total_score": p.total_score,
+                "answers_found": sum(p.game.revealed_answers) if p.game else 0,
+                "strikes": p.game.strikes if p.game else 0,
+            })
+        players_summary.sort(key=lambda x: x["round_score"], reverse=True)
+
+        return {
+            "current_round": room.current_round,
+            "total_rounds": room.total_rounds,
+            "multiplier": room.current_multiplier(),
+            "is_final_round": room.is_final_round(),
+            "question": room.question.question_text if room.question else "",
+            "all_answers": [
+                {"text": a.text, "points": a.points}
+                for a in room.question.answers
+            ] if room.question else [],
+            "players": players_summary,
+        }
+
     def get_results(self, room_code: str) -> Optional[Dict[str, Any]]:
-        """Get final results for a finished game."""
+        """Get final match results with per-round breakdown."""
         room = self.rooms.get(room_code)
         if not room:
             return None
@@ -129,22 +199,18 @@ class MultiplayerService:
         for p in room.players.values():
             players.append({
                 "name": p.name,
-                "score": p.game.score if p.game else 0,
-                "strikes": p.game.strikes if p.game else 0,
-                "answers_found": sum(p.game.revealed_answers) if p.game else 0,
+                "total_score": p.total_score,
+                "round_scores": list(p.round_scores),
             })
-        players.sort(key=lambda x: x["score"], reverse=True)
+        players.sort(key=lambda x: x["total_score"], reverse=True)
         winner = None
-        if len(players) >= 2 and players[0]["score"] != players[1]["score"]:
+        if len(players) >= 2 and players[0]["total_score"] != players[1]["total_score"]:
             winner = players[0]["name"]
         return {
             "winner": winner,
             "players": players,
-            "question": room.question.question_text if room.question else "",
-            "all_answers": [
-                {"text": a.text, "points": a.points}
-                for a in room.question.answers
-            ] if room.question else [],
+            "total_rounds": room.total_rounds,
+            "multipliers": room.round_multipliers,
         }
 
     def get_room_for_player(self, sid: str) -> Optional[Room]:

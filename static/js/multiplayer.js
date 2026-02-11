@@ -9,6 +9,11 @@ class MultiplayerGame {
         this.roomCode = null;
         this.isHost = false;
         this.gameData = null;
+        this.currentRound = 0;
+        this.totalRounds = 3;
+        this.multiplier = 1;
+        this.myTotalScore = 0;
+        this.opponentTotalScore = 0;
 
         this.sounds = {
             ding: document.getElementById('dingSound'),
@@ -43,6 +48,12 @@ class MultiplayerGame {
             timer: document.getElementById('timer'),
             strikes: document.getElementById('strikes'),
             message: document.getElementById('message'),
+
+            // Round indicators
+            roundIndicator: document.getElementById('roundIndicator'),
+            multiplierBadge: document.getElementById('multiplierBadge'),
+            myTotalScore: document.getElementById('myTotalScore'),
+            opponentTotalScore: document.getElementById('opponentTotalScore'),
 
             // Modal
             modal: document.getElementById('gameOverModal'),
@@ -86,7 +97,8 @@ class MultiplayerGame {
         this.socket.on('guess_result', (data) => this.onGuessResult(data));
         this.socket.on('opponent_revealed', (data) => this.onOpponentRevealed(data));
         this.socket.on('timer_tick', (data) => this.onTimerTick(data));
-        this.socket.on('game_over', (data) => this.onGameOver(data));
+        this.socket.on('round_ended', (data) => this.onRoundEnded(data));
+        this.socket.on('match_over', (data) => this.onMatchOver(data));
         this.socket.on('player_left', (data) => this.onPlayerLeft(data));
         this.socket.on('room_reset', (data) => this.onRoomReset(data));
         this.socket.on('error', (data) => this.showMessage(data.message, 'error'));
@@ -166,10 +178,22 @@ class MultiplayerGame {
 
     onGameStarted(data) {
         this.gameData = data;
+        this.currentRound = data.current_round;
+        this.totalRounds = data.total_rounds;
+        this.multiplier = data.multiplier;
+        this.myTotalScore = data.my_total_score;
+        this.opponentTotalScore = data.opponent_total_score;
 
         // Switch to game view
         this.elements.lobbyView.style.display = 'none';
         this.elements.gameView.style.display = 'flex';
+        this.elements.modal.classList.remove('active');
+
+        // Update round indicator
+        this.elements.roundIndicator.textContent =
+            `ROUND ${data.current_round} / ${data.total_rounds}`;
+        this.elements.multiplierBadge.textContent = `${data.multiplier}x POINTS`;
+        this.elements.multiplierBadge.className = 'multiplier-badge multiplier-' + data.multiplier + 'x';
 
         // Set names
         this.elements.myName.textContent = (data.my_name || 'YOU').toUpperCase();
@@ -179,6 +203,8 @@ class MultiplayerGame {
         this.renderBoard(data);
         this.elements.myScore.textContent = data.my_score;
         this.elements.opponentScore.textContent = data.opponent_score;
+        this.elements.myTotalScore.textContent = data.my_total_score;
+        this.elements.opponentTotalScore.textContent = data.opponent_total_score;
         this.elements.timer.textContent = data.time_remaining;
 
         // Reset strikes
@@ -193,7 +219,12 @@ class MultiplayerGame {
     onGuessResult(data) {
         if (data.matched) {
             this.playSound('ding');
-            this.showMessage(data.message, 'success');
+            const multipliedHint = this.multiplier > 1
+                ? ` (x${this.multiplier} at round end)` : '';
+            this.showMessage(
+                `Correct! ${data.answer.text} - ${data.answer.points} pts${multipliedHint}`,
+                'success'
+            );
             this.revealMyAnswer(data.answer.index, data.answer.text, data.answer.points);
 
             // Update score from the answer points
@@ -231,7 +262,68 @@ class MultiplayerGame {
         }
     }
 
-    onGameOver(data) {
+    onRoundEnded(data) {
+        // Disable input
+        this.elements.answerInput.disabled = true;
+        this.elements.submitBtn.disabled = true;
+
+        // Title
+        this.elements.modalTitle.textContent =
+            `ROUND ${data.current_round} COMPLETE`;
+
+        const multiplierText = `Score multiplier: ${data.multiplier}x`;
+
+        // Results table
+        this.elements.resultsTable.innerHTML = '';
+        data.players.forEach(p => {
+            const row = document.createElement('div');
+            row.className = 'result-row';
+            row.innerHTML = `
+                <div>
+                    <div>${p.name}</div>
+                    <div class="result-details">
+                        ${p.answers_found} answers | Raw: ${p.raw_score} x ${p.multiplier} = ${p.round_score}
+                    </div>
+                </div>
+                <div class="result-score">Total: ${p.total_score}</div>
+            `;
+            this.elements.resultsTable.appendChild(row);
+        });
+
+        this.elements.modalMessage.textContent = multiplierText;
+
+        // Show all answers for the round
+        if (data.all_answers && data.all_answers.length > 0) {
+            this.elements.allAnswers.innerHTML = `
+                <div class="all-answers-title">${data.question}</div>
+                <div class="all-answers-list">
+                    ${data.all_answers.map(a =>
+                        `<div class="answer-item">${a.text} <span class="answer-item-points">${a.points}</span></div>`
+                    ).join('')}
+                </div>
+            `;
+        }
+
+        // Show "Next Round" button for host, message for non-host
+        const nextRoundText = `Next round starting soon...`;
+        if (this.isHost) {
+            this.elements.playAgainBtn.textContent = 'NEXT ROUND';
+            this.elements.playAgainBtn.onclick = () => {
+                this.socket.emit('next_round');
+                this.elements.playAgainBtn.disabled = true;
+                this.elements.playAgainBtn.textContent = 'STARTING...';
+            };
+            this.elements.playAgainBtn.style.display = 'block';
+            this.elements.playAgainBtn.disabled = false;
+        } else {
+            this.elements.playAgainBtn.style.display = 'none';
+            this.elements.modalMessage.textContent = multiplierText + '\n' + nextRoundText;
+        }
+
+        this.elements.modal.classList.add('active');
+    }
+
+    onMatchOver(data) {
         // Disable input
         this.elements.answerInput.disabled = true;
         this.elements.submitBtn.disabled = true;
@@ -240,43 +332,56 @@ class MultiplayerGame {
         if (data.winner) {
             const myName = this.elements.myName.textContent;
             if (data.winner.toUpperCase() === myName) {
-                this.elements.modalTitle.textContent = 'YOU WIN!';
+                this.elements.modalTitle.textContent = 'YOU WIN THE MATCH!';
                 this.elements.modalMessage.textContent = 'Congratulations!';
             } else {
                 this.elements.modalTitle.textContent = 'YOU LOSE!';
-                this.elements.modalMessage.textContent = `${data.winner} wins!`;
+                this.elements.modalMessage.textContent = `${data.winner} wins the match!`;
             }
         } else {
             this.elements.modalTitle.textContent = "IT'S A TIE!";
-            this.elements.modalMessage.textContent = 'Great minds think alike!';
+            this.elements.modalMessage.textContent = 'What a close match!';
         }
 
-        // Results table
+        // Per-round breakdown table
         this.elements.resultsTable.innerHTML = '';
         data.players.forEach((p, i) => {
+            const roundBreakdown = p.round_scores.map((score, ri) =>
+                `R${ri + 1}(${data.multipliers[ri]}x): ${score}`
+            ).join(' | ');
+
             const row = document.createElement('div');
             row.className = `result-row${i === 0 && data.winner ? ' winner' : ''}`;
             row.innerHTML = `
                 <div>
                     <div>${p.name}</div>
-                    <div class="result-details">${p.answers_found} answers, ${p.strikes} strikes</div>
+                    <div class="result-details">${roundBreakdown}</div>
                 </div>
-                <div class="result-score">${p.score}</div>
+                <div class="result-score">${p.total_score}</div>
             `;
             this.elements.resultsTable.appendChild(row);
         });
 
-        // All answers
-        if (data.all_answers && data.all_answers.length > 0) {
+        // Show last round's answers if available
+        if (data.last_round_summary && data.last_round_summary.all_answers) {
+            const summary = data.last_round_summary;
             this.elements.allAnswers.innerHTML = `
-                <div class="all-answers-title">ALL ANSWERS</div>
+                <div class="all-answers-title">${summary.question}</div>
                 <div class="all-answers-list">
-                    ${data.all_answers.map(a =>
+                    ${summary.all_answers.map(a =>
                         `<div class="answer-item">${a.text} <span class="answer-item-points">${a.points}</span></div>`
                     ).join('')}
                 </div>
             `;
+        } else {
+            this.elements.allAnswers.innerHTML = '';
         }
+
+        // Play Again button (back to lobby)
+        this.elements.playAgainBtn.textContent = 'PLAY AGAIN';
+        this.elements.playAgainBtn.onclick = () => this.playAgain();
+        this.elements.playAgainBtn.style.display = 'block';
+        this.elements.playAgainBtn.disabled = false;
 
         this.elements.modal.classList.add('active');
     }
@@ -292,6 +397,10 @@ class MultiplayerGame {
                 this.elements.modalMessage.textContent = `${data.player_name} disconnected.`;
                 this.elements.resultsTable.innerHTML = '';
                 this.elements.allAnswers.innerHTML = '';
+                this.elements.playAgainBtn.textContent = 'PLAY AGAIN';
+                this.elements.playAgainBtn.onclick = () => this.playAgain();
+                this.elements.playAgainBtn.style.display = 'block';
+                this.elements.playAgainBtn.disabled = false;
                 this.elements.modal.classList.add('active');
             }, 1500);
         }
@@ -302,6 +411,11 @@ class MultiplayerGame {
         this.elements.gameView.style.display = 'none';
         this.elements.lobbyView.style.display = 'flex';
         this.renderPlayerList(data.players);
+
+        // Reset round state
+        this.currentRound = 0;
+        this.myTotalScore = 0;
+        this.opponentTotalScore = 0;
 
         if (this.isHost && data.players.length >= 2) {
             this.elements.waitingMessage.textContent = 'Ready to start!';
