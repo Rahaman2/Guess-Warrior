@@ -3,3 +3,4 @@ rapidfuzz==3.6.1
 sentence-transformers==3.3.1
 Werkzeug==3.0.1
 flask-socketio==5.3.6
+gunicorn==23.0.0

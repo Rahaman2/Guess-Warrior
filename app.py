@@ -1,6 +1,6 @@
 """Family Feud Game - Flask Application Entry Point."""
 
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify
 from flask_socketio import SocketIO
 from config import Config
 from services import QuestionService, MatchingService, GameService
@@ -45,6 +45,10 @@ def create_app(config_class=Config):
     @app.route('/multiplayer')
     def multiplayer_page():
         return render_template('multiplayer.html')
+
+    @app.route('/api/health')
+    def health():
+        return jsonify(status='ok')
 
     return app, socketio
 

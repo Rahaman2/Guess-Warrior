@@ -8,7 +8,7 @@ class Config:
 
     # Flask settings
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'family-feud-secret-key-change-in-production'
-    DEBUG = True
+    DEBUG = os.environ.get('FLASK_DEBUG', '1') == '1'
 
     # Game settings
     QUESTIONS_CSV_PATH = 'questions.csv'
@@ -17,4 +17,4 @@ class Config:
 
     # Server settings
     HOST = '0.0.0.0'
-    PORT = 5000
+    PORT = int(os.environ.get('PORT', 5000))

@@ -1,0 +1,140 @@
+name: Deploy
+
+# Deploys main to the VPS after CI passes on it, or on demand from the Actions tab
+# (tick "dry run" to see the port / nginx / certificate plan without changing
+# anything on the server).
+#
+# Repository secrets (Settings > Secrets and variables > Actions > Secrets):
+#   VPS_HOST       server hostname or IP
+#   VPS_USERNAME   SSH user the app runs as
+#   VPS_PASSWORD   that user's SSH password
+#   VPS_PORT       optional, defaults to 22
+#
+# Repository variables (same page > Variables), all optional:
+#   APP_URL        public URL, default https://guess-warrior.matricmate.co.za
+#   APP_DIR        install directory on the server, default ~/guess-warrior
+#   PORT_RANGE     range the app's port is reserved from, default 5100-5199
+#   CERTBOT_EMAIL  email for a new Let's Encrypt certificate; not needed when
+#                  the server already has a certbot account (it does if it has
+#                  issued certificates for other sites)
+#
+# The deploy user needs root or passwordless sudo: it reserves a port in
+# /etc/port-registry, installs the systemd service and writes the nginx site.
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run: show the deploy plan without changing the server"
+        type: boolean
+        default: true
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  APP_URL: ${{ vars.APP_URL || 'https://guess-warrior.matricmate.co.za' }}
+  APP_DIR: ${{ vars.APP_DIR }}
+  PORT_RANGE: ${{ vars.PORT_RANGE || '5100-5199' }}
+  CERTBOT_EMAIL: ${{ vars.CERTBOT_EMAIL }}
+  DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+
+jobs:
+  deploy:
+    name: Deploy to VPS
+    # Automatic runs only for a successful CI run of a push to main.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: production
+      url: ${{ vars.APP_URL || 'https://guess-warrior.matricmate.co.za' }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Check deploy secrets are set
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
+          VPS_PASSWORD: ${{ secrets.VPS_PASSWORD }}
+        run: |
+          missing=""
+          [ -n "$VPS_HOST" ] || missing="$missing VPS_HOST"
+          [ -n "$VPS_USERNAME" ] || missing="$missing VPS_USERNAME"
+          [ -n "$VPS_PASSWORD" ] || missing="$missing VPS_PASSWORD"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing repository secrets:$missing"
+            exit 1
+          fi
+
+      - name: Package release
+        id: package
+        run: |
+          RELEASE_ID="$(date -u +%Y%m%d%H%M%S)-$(git rev-parse --short HEAD)"
+          echo "release_id=$RELEASE_ID" >> "$GITHUB_OUTPUT"
+
+          mkdir -p bundle
+          git archive --format=tar.gz -o bundle/release.tar.gz HEAD \
+            -- . ':!.github' ':!deploy'
+          cp deploy/remote-deploy.sh deploy/configure-nginx.sh bundle/
+          ls -lh bundle
+
+      - name: Upload release to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          source: bundle/*
+          target: /tmp/guess-warrior-${{ steps.package.outputs.release_id }}
+          strip_components: 1
+
+      - name: ${{ env.DRY_RUN == 'true' && 'Show deploy plan (dry run)' || 'Install and switch over on VPS' }}
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          RELEASE_ID: ${{ steps.package.outputs.release_id }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          command_timeout: 25m
+          envs: RELEASE_ID,APP_URL,APP_DIR,PORT_RANGE,CERTBOT_EMAIL,DRY_RUN
+          script: |
+            set -e
+            [ -n "$APP_DIR" ] || unset APP_DIR
+            BUNDLE="/tmp/guess-warrior-$RELEASE_ID"
+            FLAGS=""
+            [ "$DRY_RUN" = "true" ] && FLAGS="--dry-run"
+            status=0
+            bash "$BUNDLE/remote-deploy.sh" "$RELEASE_ID" "$BUNDLE/release.tar.gz" $FLAGS || status=$?
+            rm -rf "$BUNDLE"
+            exit $status
+
+      - name: Public health check
+        if: env.DRY_RUN != 'true'
+        # Warns rather than fails: the app itself was already health-checked on
+        # the server, so a failure here points at DNS / nginx / TLS instead.
+        continue-on-error: true
+        run: |
+          for i in $(seq 1 10); do
+            if curl -fsS "$APP_URL/api/health"; then exit 0; fi
+            sleep 3
+          done
+          echo "::warning::$APP_URL/api/health is not reachable. The app is running on the server; check nginx, DNS and TLS."
+          exit 1
